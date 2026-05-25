@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#ff7aa7" />
   <meta name="description" content="ZEEZ Studio custom keycap keychain simulator" />
-  <link rel="manifest" href="manifest.json" />
   <title>ZEEZ Studio — Keycap Customizer</title>
   <style>
     :root{
@@ -14,12 +13,12 @@
       --ink:#221d26;
       --muted:#746b78;
       --line:#efe2eb;
-      --brand:#ff7aa7;
+      --brand:#ff0a8a;
       --brand2:#8edaf5;
       --brand3:#bca4ff;
-      --ok:#3aa981;
       --shadow:0 18px 50px rgba(70, 37, 63, .14);
       --radius:24px;
+      --tabBorder:#111111;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -34,7 +33,7 @@
         var(--bg);
       overflow-x:hidden;
     }
-    button,input,select,textarea{font:inherit}
+    button,input,select{font:inherit}
     .app{max-width:1180px;margin:0 auto;padding:18px 16px 34px}
     .topbar{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -52,12 +51,6 @@
     }
     .brand h1{font-size:20px;line-height:1;margin:0;font-weight:1000;letter-spacing:-.4px}
     .brand p{margin:4px 0 0;font-size:12px;color:var(--muted)}
-    .pill{
-      border:1px solid rgba(255,122,167,.35);
-      background:rgba(255,255,255,.72);
-      border-radius:999px;padding:9px 12px;font-size:12px;font-weight:800;
-      color:#b93164;
-    }
     .grid{display:grid;grid-template-columns:minmax(0, 1fr) 420px;gap:18px;align-items:start}
     .panel,.previewPanel{
       border:1px solid rgba(255,255,255,.75);
@@ -66,52 +59,63 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-    .panel{padding:18px}.previewPanel{position:sticky;top:82px;padding:16px}
-    .section{padding:14px 0;border-bottom:1px dashed var(--line)}
-    .section:first-child{padding-top:0}.section:last-child{border-bottom:0;padding-bottom:0}
+    .panel{padding:18px}
+    .previewPanel{position:sticky;top:82px;padding:16px}
+    .tabBar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .mainTab{
+      min-height:52px;border:2.5px solid var(--tabBorder);border-radius:18px;background:#fff;
+      color:#697182;font-weight:1000;font-size:15px;letter-spacing:.2px;cursor:pointer;
+      box-shadow:4px 6px 0 #000;transition:.15s transform,.15s box-shadow,.15s background,.15s color;
+    }
+    .mainTab:active{transform:translate(2px,2px);box-shadow:2px 3px 0 #000}
+    .mainTab.active{background:linear-gradient(180deg,#ff1496,#e4007c);color:#fff}
+    .tabPanel{display:none}
+    .tabPanel.active{display:block}
     .sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
     .sectionTitle h2{font-size:15px;margin:0;font-weight:1000;letter-spacing:-.2px}
     .sectionTitle small{color:var(--muted);font-size:12px;font-weight:700}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .seg{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;width:100%}
-    .seg button,.choice button,.btn{
+    .field{display:grid;gap:8px}
+    input,select{
+      width:100%;border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px 14px;
+      color:var(--ink);outline:none;font-weight:850;
+    }
+    input:focus,select:focus{border-color:rgba(255,122,167,.70);box-shadow:0 0 0 4px rgba(255,122,167,.12)}
+    .palette{display:flex;flex-wrap:wrap;gap:10px}
+    .swatch{
+      --frame-color:#ddd;
+      border:2px solid #111;background:var(--frame-color);border-radius:16px;padding:0 14px;cursor:pointer;text-align:center;
+      box-shadow:3px 4px 0 #000;min-height:58px;min-width:116px;display:inline-flex;gap:8px;justify-content:center;align-items:center;
+      transition:.15s transform,.15s box-shadow,.15s background,.15s filter;
+    }
+    .swatch:active{transform:translate(2px,2px);box-shadow:1px 2px 0 #000}
+    .swatch.active{background:var(--frame-color);box-shadow:inset 0 0 0 4px var(--brand), 3px 4px 0 #000}
+    .dot{display:none}
+    .swatch span:last-child{font-size:12px;font-weight:1000;color:inherit;line-height:1.2;text-align:center;white-space:nowrap}
+    .subTabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .subTab{
+      min-height:44px;border:2px solid #111;border-radius:16px;background:#fff;color:#6c7482;font-weight:1000;cursor:pointer;
+      box-shadow:3px 4px 0 #000;transition:.15s transform,.15s box-shadow,.15s background,.15s color;
+    }
+    .subTab:active{transform:translate(2px,2px);box-shadow:1px 2px 0 #000}
+    .subTab.active{background:linear-gradient(180deg,#ff1496,#e4007c);color:#fff}
+    .editorCard{
+      border:1px solid var(--line);border-radius:20px;background:#fff;padding:14px;
+      box-shadow:0 10px 18px rgba(69,35,62,.05);
+    }
+    .editorTop{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+    .editorLabel{font-size:13px;font-weight:1000}
+    .smallBtn,.btn{
       min-height:42px;border:0;border-radius:16px;background:#fff;color:var(--ink);
       box-shadow:inset 0 0 0 1px var(--line), 0 8px 16px rgba(69,35,62,.06);
       cursor:pointer;font-weight:950;transition:.15s transform,.15s box-shadow,.15s background;
     }
-    .seg button:active,.choice button:active,.btn:active{transform:scale(.98)}
-    .seg button.active,.choice button.active{
-      background:linear-gradient(135deg,rgba(255,122,167,.18),rgba(142,218,245,.22));
-      box-shadow:inset 0 0 0 2px var(--brand), 0 10px 22px rgba(255,122,167,.16);
-    }
-    .field{display:grid;gap:7px;margin:10px 0}
-    label{font-size:12px;color:var(--muted);font-weight:900}
-    input,select,textarea{
-      width:100%;border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px 14px;
-      color:var(--ink);outline:none;font-weight:850;
-    }
-    textarea{min-height:82px;resize:vertical;font-weight:750;line-height:1.45}
-    input:focus,select:focus,textarea:focus{border-color:rgba(255,122,167,.70);box-shadow:0 0 0 4px rgba(255,122,167,.12)}
-    .switchLine{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:18px;background:#fff}
-    .switchLine span{font-size:13px;font-weight:900}.switchLine small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
-    .toggle{width:54px;height:32px;border-radius:999px;border:0;background:#ddd;position:relative;cursor:pointer;flex:0 0 auto}
-    .toggle::after{content:"";position:absolute;width:26px;height:26px;left:3px;top:3px;border-radius:999px;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.18);transition:.18s}
-    .toggle.on{background:linear-gradient(135deg,var(--brand),var(--brand3))}.toggle.on::after{left:25px}
-    .palette{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-    .swatch{
-      border:0;background:#fff;border-radius:17px;padding:8px 7px 7px;cursor:pointer;text-align:left;
-      box-shadow:inset 0 0 0 1px var(--line), 0 8px 16px rgba(69,35,62,.05);
-      min-height:66px;display:grid;gap:6px;align-content:start;
-    }
-    .swatch.active{box-shadow:inset 0 0 0 3px var(--brand), 0 10px 22px rgba(255,122,167,.16)}
-    .dot{width:100%;height:28px;border-radius:12px;border:1px solid rgba(0,0,0,.08);box-shadow:inset 0 7px 10px rgba(255,255,255,.35)}
-    .swatch span{font-size:10.5px;font-weight:900;color:#4a414d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .quickSlots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-    .mini{font-size:12px;color:var(--muted);line-height:1.45;margin:8px 0 0}.mini b{color:var(--ink)}
+    .smallBtn:active,.btn:active{transform:scale(.98)}
+    .smallBtn{padding:10px 12px;font-size:12px}
+    .slotHint{display:inline-flex;align-items:center;justify-content:center;min-width:60px;height:60px;border-radius:18px;background:linear-gradient(180deg,#ff1496,#e4007c);color:#fff;font-size:24px;font-weight:1000;border:2px solid #111;box-shadow:4px 5px 0 #000}
+    .helper{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+    .hidden{display:none!important}
     .previewWrap{
-      background:
-        linear-gradient(45deg, rgba(255,122,167,.08), rgba(142,218,245,.10)),
-        #fff;
+      background:linear-gradient(45deg, rgba(255,122,167,.08), rgba(142,218,245,.10)), #fff;
       border-radius:26px;border:1px solid var(--line);padding:10px;display:grid;place-items:center;min-height:520px;
       position:relative;overflow:hidden;
     }
@@ -119,25 +123,27 @@
     .previewWrap::before{width:170px;height:170px;background:rgba(255,218,92,.20);left:-70px;top:80px}
     .previewWrap::after{width:150px;height:150px;background:rgba(188,164,255,.18);right:-60px;bottom:80px}
     #previewSvg{position:relative;z-index:1;max-width:100%;height:auto;filter:drop-shadow(0 20px 24px rgba(35,24,42,.18))}
-    .orderBox{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:12px;display:grid;gap:8px}
-    .codeLine{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#fff8fb;border:1px solid #ffd5e4;border-radius:16px;padding:10px 12px}
-    .codeLine code{font-weight:1000;color:#bb245e;letter-spacing:.3px;overflow:hidden;text-overflow:ellipsis}
-    .smallBtn{border:0;border-radius:12px;padding:8px 10px;font-size:12px;font-weight:1000;background:#fff;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;white-space:nowrap}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
     .btn{padding:13px 14px;background:#fff;font-weight:1000;display:flex;justify-content:center;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}
-    .btn.primary{background:linear-gradient(135deg,var(--brand),#ff9c66);color:#fff;box-shadow:0 14px 26px rgba(255,122,167,.28)}
     .btn.blue{background:linear-gradient(135deg,var(--brand2),var(--brand3));color:#fff;box-shadow:0 14px 26px rgba(142,218,245,.25)}
     .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);opacity:0;background:#221d26;color:#fff;padding:12px 14px;border-radius:999px;z-index:99;font-weight:900;font-size:13px;box-shadow:0 18px 34px rgba(0,0,0,.18);transition:.25s}
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-    .footerNote{padding:14px 4px 0;color:var(--muted);font-size:11px;line-height:1.45;text-align:center}
-    .badge{display:inline-flex;align-items:center;gap:5px;background:#f6efff;border:1px solid #e9dfff;color:#7358b9;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:1000}
-    .hidden{display:none!important}
     @media (max-width: 900px){
-      .grid{grid-template-columns:1fr}.previewPanel{position:relative;top:auto;order:-1}.previewWrap{min-height:430px}.app{padding-bottom:90px}.palette{grid-template-columns:repeat(3,1fr)}
-      .topbar{padding-top:8px}.pill{display:none}.brand h1{font-size:18px}
+      .grid{grid-template-columns:1fr}
+      .previewPanel{position:relative;top:auto}
+      .previewWrap{min-height:430px}
+      .app{padding-bottom:90px}
+      .topbar{padding-top:8px}
+      .brand h1{font-size:18px}
     }
-    @media (max-width: 480px){
-      .app{padding-left:10px;padding-right:10px}.panel,.previewPanel{border-radius:22px;padding:12px}.seg{gap:5px}.seg button{border-radius:13px;min-height:38px}.actions{grid-template-columns:1fr}.palette{grid-template-columns:repeat(2,1fr)}.quickSlots{grid-template-columns:1fr}.previewWrap{min-height:380px;padding:0}.swatch{min-height:62px}.dot{height:25px}
+    @media (max-width: 520px){
+      .app{padding-left:10px;padding-right:10px}
+      .panel,.previewPanel{border-radius:22px;padding:12px}
+      .tabBar{gap:8px}
+      .mainTab{min-height:48px;font-size:14px}
+      .subTabs{gap:8px}
+      .swatch{min-height:54px;min-width:100px;padding:0 12px}
+      .previewWrap{min-height:380px;padding:0}
     }
   </style>
 </head>
@@ -151,55 +157,47 @@
           <p>Custom keycap keychain simulator</p>
         </div>
       </div>
-      <div class="pill">Preview • Order Code • WhatsApp</div>
     </header>
 
     <main class="grid">
       <section class="panel" aria-label="Customizer controls">
-        <div class="section">
-          <div class="sectionTitle"><h2>1. Nama / teks</h2><small>emoji bisa dipakai</small></div>
+        <div class="tabBar">
+          <button class="mainTab active" id="tabTextBtn" type="button">TEXT</button>
+          <button class="mainTab" id="tabCaseBtn" type="button">CASE</button>
+          <button class="mainTab" id="tabColorsBtn" type="button">COLORS</button>
+        </div>
+
+        <div class="tabPanel active" id="tabTextPanel">
           <div class="field">
-            <label for="textInput">Tulis nama atau kombinasi karakter</label>
-            <input id="textInput" maxlength="24" value="ZEEZ" placeholder="Contoh: DIAS, AYA, 💗A💗" autocomplete="off" />
+            <input id="textInput" maxlength="9" value="ZEEZ" placeholder="Tulis nama / teks" autocomplete="off" style="text-transform:uppercase" />
           </div>
-          <div class="switchLine">
-            <div><span>Auto slot dari teks</span><small>Maksimal 6 slot, spasi akan dilewati.</small></div>
-            <button id="autoToggle" class="toggle on" aria-label="Auto slot"></button>
-          </div>
-          <p class="mini">Tips: untuk hasil keycaps, pakai <b>1 karakter per slot</b>. Emoji ditampilkan mengikuti perangkat yang dipakai.</p>
         </div>
 
-        <div class="section" id="slotSection">
-          <div class="sectionTitle"><h2>2. Jumlah slot</h2><small>1–6</small></div>
-          <div class="seg" id="slotButtons"></div>
-        </div>
-
-        <div class="section">
-          <div class="sectionTitle"><h2>3. Warna case</h2><small>body / frame</small></div>
+        <div class="tabPanel" id="tabCasePanel">
+          <div class="sectionTitle"><h2>Warna case</h2><small>body / frame</small></div>
           <div class="palette" id="casePalette"></div>
         </div>
 
-        <div class="section">
-          <div class="sectionTitle"><h2>4. Warna keycaps</h2><small>per slot</small></div>
-          <div class="row" style="margin-bottom:10px">
-            <select id="activeKeySelect" aria-label="Pilih slot keycap"></select>
-            <button class="smallBtn" id="applyAllBtn">Terapkan ke semua</button>
+        <div class="tabPanel" id="tabColorsPanel">
+          <div class="subTabs">
+            <button class="subTab active" id="modeKeycapsBtn" type="button">KEYCAPS</button>
+            <button class="subTab" id="modeTextBtn" type="button">TEXT</button>
           </div>
-          <div class="palette" id="keyPalette"></div>
-        </div>
 
-        <div class="section">
-          <div class="sectionTitle"><h2>5. Warna tulisan</h2><small>legend</small></div>
-          <div class="palette" id="textPalette"></div>
-        </div>
-
-        <div class="section">
-          <div class="sectionTitle"><h2>6. WhatsApp toko</h2><small>untuk tombol order</small></div>
-          <div class="field">
-            <label for="waInput">Nomor WhatsApp tujuan, format internasional tanpa +</label>
-            <input id="waInput" inputmode="numeric" placeholder="Contoh: 6281234567890" />
+          <div class="editorCard">
+            <div class="editorTop">
+              <div>
+                <div class="editorLabel" id="editorTitle">Warna keycap</div>
+                <div class="helper" id="editorSubtitle">Pilih slot lalu tentukan warnanya.</div>
+              </div>
+              <div class="slotHint" id="slotHint">Z</div>
+            </div>
+            <div class="row">
+              <select id="activeColorSlotSelect" aria-label="Pilih slot warna"></select>
+              <button class="smallBtn" id="applyAllColorBtn" type="button">Terapkan ke semua</button>
+            </div>
+            <div class="palette" id="colorPalette"></div>
           </div>
-          <p class="mini">Nomor ini hanya tersimpan di perangkat kamu. Kosongkan kalau mau copy format order saja.</p>
         </div>
       </section>
 
@@ -207,16 +205,9 @@
         <div class="previewWrap">
           <svg id="previewSvg" width="360" height="590" viewBox="0 0 360 590" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview custom keycap"></svg>
         </div>
-        <div class="orderBox">
-          <span class="badge">Kode desain aktif</span>
-          <div class="codeLine"><code id="orderCode">ZEEZ-0000</code><button class="smallBtn" id="copyCodeBtn">Salin</button></div>
-          <textarea id="orderText" readonly></textarea>
-        </div>
         <div class="actions">
-          <button class="btn blue" id="saveImageBtn">💾 Simpan gambar</button>
-          <button class="btn primary" id="waBtn">🟢 Kirim WhatsApp</button>
+          <button class="btn blue" id="saveImageBtn" type="button">💾 Simpan gambar</button>
         </div>
-        <div class="footerNote">Dibuat untuk ZEEZ Studio. Desain ini simulator original, bukan salinan UI/brand toko lain.</div>
       </aside>
     </main>
   </div>
@@ -224,50 +215,43 @@
 
   <script>
     const palette = [
-      {name:'Putih', hex:'#F7F3EA'},
-      {name:'Cream', hex:'#F8E8C8'},
-      {name:'Sakura Pink', hex:'#F7B5C7'},
-      {name:'Coral Pink', hex:'#F46E6E'},
-      {name:'Merah', hex:'#C9152C'},
-      {name:'Kuning', hex:'#F4D94E'},
-      {name:'Mint', hex:'#A8D8BF'},
-      {name:'Teal', hex:'#21B4AB'},
-      {name:'Sky Blue', hex:'#9FD9F3'},
-      {name:'Biru', hex:'#4E97D8'},
-      {name:'Lavender', hex:'#B49BE5'},
-      {name:'Ungu', hex:'#7C5CC4'},
-      {name:'Navy', hex:'#2E4269'},
-      {name:'Abu', hex:'#9D9AA6'},
-      {name:'Hitam', hex:'#1C1B21'},
-      {name:'Clear', hex:'#F2F5F8', clear:true}
-    ];
-
-    const textColors = [
-      {name:'Hitam', hex:'#17151A'},
-      {name:'Putih', hex:'#FFFFFF'},
-      {name:'Merah', hex:'#C9152C'},
-      {name:'Pink', hex:'#E43F80'},
-      {name:'Biru', hex:'#226EB5'},
-      {name:'Ungu', hex:'#6C4CB3'}
+      {name:'Black', hex:'#1C1C1C'},
+      {name:'White', hex:'#F7F7F4'},
+      {name:'Cream', hex:'#F1E3C8'},
+      {name:'Sky Blue', hex:'#8FD3FF'},
+      {name:'Blue', hex:'#3E7BFA'},
+      {name:'Olive Green', hex:'#73824D'},
+      {name:'Holly Green', hex:'#0F6B4B'},
+      {name:'Red', hex:'#C92B2B'},
+      {name:'Orange', hex:'#F28B2E'},
+      {name:'Sakura Pink', hex:'#F6B7C8'},
+      {name:'Fuschia', hex:'#D93D8E'},
+      {name:'Grey', hex:'#A6A6A6'},
+      {name:'Dark Grey', hex:'#595959'},
+      {name:'Yellow', hex:'#F2D64B'},
+      {name:'Coklat', hex:'#8B5A3C'},
+      {name:'Silver', hex:'#C8CDD3'}
     ];
 
     const state = {
       text: 'ZEEZ',
-      autoSlot: true,
-      slots: 4,
-      caseColor: palette[15],
-      textColor: textColors[0],
-      activeKey: 0,
-      keyColors: [palette[0], palette[2], palette[8], palette[11], palette[5], palette[6]],
-      wa: localStorage.getItem('zeez_wa') || ''
+      caseColor: palette[2],
+      keyColors: [palette[1], palette[9], palette[3], palette[5], palette[14], palette[15], palette[7], palette[10], palette[13]],
+      legendColors: Array(9).fill(palette[0]),
+      activeTab: 'text',
+      colorMode: 'keycaps',
+      activeColorSlot: 0
     };
 
     const $ = (id) => document.getElementById(id);
     const svg = $('previewSvg');
 
     function toast(msg){
-      const el = $('toast'); el.textContent = msg; el.classList.add('show');
-      clearTimeout(window.__toast); window.__toast = setTimeout(()=>el.classList.remove('show'), 1800);
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(window.__toast);
+      window.__toast = setTimeout(()=>el.classList.remove('show'), 1800);
     }
 
     function graphemes(str){
@@ -279,29 +263,25 @@
       return Array.from(compact);
     }
 
-    function sanitizeWa(v){ return (v || '').replace(/[^0-9]/g,''); }
-
-    function clampSlots(n){ return Math.max(1, Math.min(6, n)); }
-
-    function activeSlots(){
-      if(state.autoSlot){ return clampSlots(Math.max(1, graphemes(state.text).length)); }
-      return clampSlots(state.slots);
-    }
-
+    function clampSlots(n){ return Math.max(1, Math.min(9, n)); }
+    function activeSlots(){ return clampSlots(graphemes(state.text).length || 1); }
     function charsForSlots(){
-      const chars = graphemes(state.text);
+      const chars = graphemes(state.text).slice(0, 9);
       const slots = activeSlots();
       const result = [];
       for(let i=0;i<slots;i++) result.push(chars[i] || '');
       return result;
     }
 
-    function colorByName(name){ return palette.find(c=>c.name===name) || palette[0]; }
-
     function brightness(hex){
       const h = hex.replace('#','');
       const r=parseInt(h.substring(0,2),16), g=parseInt(h.substring(2,4),16), b=parseInt(h.substring(4,6),16);
       return (r*299+g*587+b*114)/1000;
+    }
+
+
+    function readableText(hex){
+      return brightness(hex) > 155 ? '#111111' : '#ffffff';
     }
 
     function shade(hex, pct){
@@ -329,7 +309,7 @@
         slots,
         case: state.caseColor.name,
         keys: state.keyColors.slice(0, slots).map(c=>c.name),
-        legend: state.textColor.name
+        legends: state.legendColors.slice(0, slots).map(c=>c.name)
       };
     }
 
@@ -338,41 +318,64 @@
       return `ZEEZ-${cfg.slots}${hashCode(JSON.stringify(cfg))}`;
     }
 
-    function orderMessage(){
-      const cfg = currentConfig();
-      const keys = cfg.keys.map((k,i)=>`${i+1}. ${charsForSlots()[i] || '-'} — ${k}`).join('\n');
-      return `Halo ZEEZ Studio, saya mau pesan custom keycap keychain.\n\nKode desain: ${orderCode()}\nJumlah slot: ${cfg.slots}\nTeks: ${cfg.text || '-'}\nWarna case: ${cfg.case}\nWarna tulisan: ${cfg.legend}\nWarna keycaps:\n${keys}\n\nCatatan tambahan:\n-`;
-    }
-
-    function buildSlotButtons(){
-      const wrap = $('slotButtons'); wrap.innerHTML='';
-      for(let i=1;i<=6;i++){
-        const b = document.createElement('button'); b.textContent = i; b.type='button';
-        b.onclick = () => {state.autoSlot=false;state.slots=i;state.activeKey=Math.min(state.activeKey,i-1);update();};
-        wrap.appendChild(b);
-      }
-    }
-
     function buildPalette(containerId, colors, getActive, onClick){
-      const wrap = $(containerId); wrap.innerHTML='';
+      const wrap = $(containerId);
+      wrap.innerHTML='';
       colors.forEach((c,idx)=>{
-        const b=document.createElement('button'); b.className='swatch'; b.type='button'; b.title=c.name;
-        b.innerHTML=`<span class="dot" style="background:${c.hex};${c.clear?'opacity:.58;background:linear-gradient(135deg,#ffffff,#dce7ee);':''}"></span><span>${c.name}</span>`;
+        const b=document.createElement('button');
+        b.className='swatch';
+        b.type='button';
+        b.title=c.name;
+        b.style.setProperty('--frame-color', c.hex);
+        b.style.color = readableText(c.hex);
+        b.innerHTML=`<span class="dot"></span><span>${c.name}</span>`;
         if(getActive(c,idx)) b.classList.add('active');
         b.onclick=()=>onClick(c,idx);
         wrap.appendChild(b);
       });
     }
 
-    function updateActiveKeySelect(){
-      const sel = $('activeKeySelect'); const slots=activeSlots();
+    function updateColorSlotSelect(){
+      const sel = $('activeColorSlotSelect');
+      const slots = activeSlots();
+      const chars = charsForSlots();
       sel.innerHTML='';
       for(let i=0;i<slots;i++){
-        const opt=document.createElement('option'); opt.value=i; opt.textContent=`Slot ${i+1} (${charsForSlots()[i] || '-'})`;
+        const opt=document.createElement('option');
+        opt.value=i;
+        opt.textContent=`Slot ${i+1} (${chars[i] || '-'})`;
         sel.appendChild(opt);
       }
-      state.activeKey = Math.min(state.activeKey, slots-1);
-      sel.value = state.activeKey;
+      state.activeColorSlot = Math.min(state.activeColorSlot, slots - 1);
+      sel.value = state.activeColorSlot;
+      $('slotHint').textContent = chars[state.activeColorSlot] || '?';
+    }
+
+    function syncTabs(){
+      const tabs = ['text','case','colors'];
+      tabs.forEach(name => {
+        $(`tab${name.charAt(0).toUpperCase()+name.slice(1)}Btn`).classList.toggle('active', state.activeTab === name);
+        $(`tab${name.charAt(0).toUpperCase()+name.slice(1)}Panel`).classList.toggle('active', state.activeTab === name);
+      });
+      $('modeKeycapsBtn').classList.toggle('active', state.colorMode === 'keycaps');
+      $('modeTextBtn').classList.toggle('active', state.colorMode === 'text');
+      $('editorTitle').textContent = state.colorMode === 'keycaps' ? 'Warna keycap' : 'Warna huruf';
+      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih slot lalu tentukan warna keycap.' : 'Pilih slot lalu tentukan warna huruf.';
+    }
+
+    function renderColorEditor(){
+      updateColorSlotSelect();
+      if(state.colorMode === 'keycaps'){
+        buildPalette('colorPalette', palette, c => (state.keyColors[state.activeColorSlot] || {}).name === c.name, c => {
+          state.keyColors[state.activeColorSlot] = c;
+          update();
+        });
+      } else {
+        buildPalette('colorPalette', palette, c => (state.legendColors[state.activeColorSlot] || {}).name === c.name, c => {
+          state.legendColors[state.activeColorSlot] = c;
+          update();
+        });
+      }
     }
 
     function renderSvg(){
@@ -384,7 +387,7 @@
       const shellX = 111;
       const shellY = 116;
       const shellW = 138;
-      const keyW = 92;
+      const keyW = 58;
       const keyH = 58;
       const gap = 12;
       const innerPadTop = 21;
@@ -394,7 +397,6 @@
       const ringCx = 180;
       const ringCy = 48;
       const caseFill = state.caseColor.hex;
-      const isClear = state.caseColor.clear;
       const darker = shade(caseFill, -18);
       const lighter = shade(caseFill, 25);
       let defs = `<defs>
@@ -406,15 +408,14 @@
         <rect width="360" height="${h}" rx="28" fill="#fff7fb"/>
         <circle cx="58" cy="90" r="34" fill="#FFE2EC" opacity=".75"/>
         <circle cx="296" cy="${h-92}" r="48" fill="#E7F8FF" opacity=".82"/>
-        <text x="180" y="${h-24}" text-anchor="middle" fill="#b9a6b2" font-weight="900" font-size="12">ZEEZ STUDIO • ${orderCode()}</text>
         <circle cx="${ringCx}" cy="${ringCy}" r="28" fill="none" stroke="url(#metal)" stroke-width="9"/>
         <circle cx="${ringCx}" cy="${ringCy}" r="17" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="3"/>
         <path d="M180 78 C180 91 180 99 180 111" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/>
         <circle cx="180" cy="94" r="7" fill="url(#metal)"/>
         <g filter="url(#softShadow)">
-          <rect x="${shellX}" y="${bodyY}" width="${shellW}" height="${bodyH}" rx="24" fill="url(#caseGrad)" ${isClear?'opacity=".56"':''}/>
-          <rect x="${shellX+9}" y="${bodyY+10}" width="${shellW-18}" height="${bodyH-20}" rx="18" fill="#101017" opacity="${isClear?'.10':'.16'}"/>
-          <rect x="${shellX+13}" y="${bodyY+14}" width="${shellW-26}" height="${bodyH-28}" rx="16" fill="#ffffff" opacity="${isClear?'.36':'.14'}"/>
+          <rect x="${shellX}" y="${bodyY}" width="${shellW}" height="${bodyH}" rx="24" fill="url(#caseGrad)"/>
+          <rect x="${shellX+9}" y="${bodyY+10}" width="${shellW-18}" height="${bodyH-20}" rx="18" fill="#101017" opacity=".16"/>
+          <rect x="${shellX+13}" y="${bodyY+14}" width="${shellW-26}" height="${bodyH-28}" rx="16" fill="#ffffff" opacity=".14"/>
         </g>`;
       for(let i=0;i<slots;i++){
         const y = bodyY + innerPadTop + i*(keyH+gap);
@@ -422,46 +423,33 @@
         const fill = color.hex;
         const keyDark = shade(fill, -12);
         const keyLight = shade(fill, 28);
-        const textFill = state.textColor.hex;
+        const textFill = (state.legendColors[i] || palette[0]).hex;
         const stroke = brightness(fill) > 180 ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.16)';
+        const fontSize = chars[i] && chars[i].length > 1 ? 24 : 30;
         out += `
           <g>
             <rect x="${keyX+4}" y="${y+6}" width="${keyW}" height="${keyH}" rx="13" fill="#000" opacity=".13"/>
             <rect x="${keyX}" y="${y}" width="${keyW}" height="${keyH}" rx="14" fill="${keyDark}"/>
             <rect x="${keyX+5}" y="${y+4}" width="${keyW-10}" height="${keyH-11}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="1"/>
             <path d="M${keyX+12} ${y+8} H${keyX+keyW-12} Q${keyX+keyW-4} ${y+8} ${keyX+keyW-8} ${y+18} L${keyX+keyW-16} ${y+34} Q${keyX+keyW-20} ${y+42} ${keyX+keyW-30} ${y+42} H${keyX+30} Q${keyX+20} ${y+42} ${keyX+16} ${y+34} L${keyX+8} ${y+18} Q${keyX+4} ${y+8} ${keyX+12} ${y+8} Z" fill="${keyLight}" opacity=".52"/>
-            <text x="${keyX+keyW/2}" y="${y+38}" text-anchor="middle" font-size="${chars[i] && chars[i].length>1?24:30}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(chars[i] || '')}</text>
+            <text x="${keyX+keyW/2}" y="${y+38}" text-anchor="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(chars[i] || '')}</text>
           </g>`;
       }
-      out += `<text x="180" y="${bodyY+bodyH+34}" text-anchor="middle" fill="#554955" font-size="15" font-weight="1000">${escapeXml(chars.join('') || 'CUSTOM')}</text>`;
       svg.innerHTML = out;
     }
 
-    function escapeXml(s){ return String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
-
-    function update(){
-      state.text = $('textInput').value;
-      state.wa = sanitizeWa($('waInput').value);
-      localStorage.setItem('zeez_wa', state.wa);
-      $('waInput').value = state.wa;
-      $('autoToggle').classList.toggle('on', state.autoSlot);
-      $('slotSection').classList.toggle('hidden', state.autoSlot);
-      const slots=activeSlots();
-      [...$('slotButtons').children].forEach((b,idx)=>b.classList.toggle('active', idx+1===slots));
-      updateActiveKeySelect();
-      buildPalette('casePalette', palette, c=>c.name===state.caseColor.name, c=>{state.caseColor=c;update();});
-      buildPalette('keyPalette', palette, c=>(state.keyColors[state.activeKey]||{}).name===c.name, c=>{state.keyColors[state.activeKey]=c;update();});
-      buildPalette('textPalette', textColors, c=>c.name===state.textColor.name, c=>{state.textColor=c;update();});
-      $('orderCode').textContent = orderCode();
-      $('orderText').value = orderMessage();
-      renderSvg();
+    function escapeXml(s){
+      return String(s).replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
     }
 
-    async function copyText(text, success){
-      try{ await navigator.clipboard.writeText(text); toast(success || 'Disalin'); }
-      catch(e){
-        const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast(success || 'Disalin');
-      }
+    function update(){
+      const upper = $('textInput').value.toLocaleUpperCase('id-ID');
+      if($('textInput').value !== upper) $('textInput').value = upper;
+      state.text = upper;
+      syncTabs();
+      buildPalette('casePalette', palette, c => c.name === state.caseColor.name, c => { state.caseColor = c; update(); });
+      renderColorEditor();
+      renderSvg();
     }
 
     function svgToPng(){
@@ -476,7 +464,8 @@
           canvas.width = svg.viewBox.baseVal.width * scale;
           canvas.height = svg.viewBox.baseVal.height * scale;
           const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#fff7fb'; ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.fillStyle = '#fff7fb';
+          ctx.fillRect(0,0,canvas.width,canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           URL.revokeObjectURL(url);
           canvas.toBlob((png)=> png ? resolve(png) : reject(new Error('Gagal membuat PNG')), 'image/png', 1);
@@ -491,34 +480,40 @@
         const png = await svgToPng();
         const url = URL.createObjectURL(png);
         const a = document.createElement('a');
-        a.href=url; a.download=`${orderCode()}-zeez-studio.png`;
-        document.body.appendChild(a); a.click(); a.remove();
+        a.href = url;
+        a.download = `${orderCode()}-zeez-studio.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
         setTimeout(()=>URL.revokeObjectURL(url), 1000);
         toast('Gambar disimpan');
-      }catch(e){ toast('Gagal simpan gambar'); console.error(e); }
-    }
-
-    function sendWa(){
-      const wa = sanitizeWa($('waInput').value);
-      const msg = orderMessage();
-      if(!wa){ copyText(msg, 'Format order disalin'); return; }
-      const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank');
+      }catch(e){
+        toast('Gagal simpan gambar');
+        console.error(e);
+      }
     }
 
     function init(){
-      buildSlotButtons();
-      $('waInput').value = state.wa;
       $('textInput').addEventListener('input', update);
-      $('waInput').addEventListener('input', update);
-      $('autoToggle').onclick = () => {state.autoSlot=!state.autoSlot; update();};
-      $('activeKeySelect').onchange = e => {state.activeKey = Number(e.target.value); update();};
-      $('applyAllBtn').onclick = () => { const c = state.keyColors[state.activeKey] || palette[0]; state.keyColors = Array(6).fill(c); update(); toast('Warna diterapkan'); };
-      $('copyCodeBtn').onclick = () => copyText(orderCode(), 'Kode disalin');
-      $('orderText').onclick = () => $('orderText').select();
+      $('tabTextBtn').onclick = () => { state.activeTab = 'text'; update(); };
+      $('tabCaseBtn').onclick = () => { state.activeTab = 'case'; update(); };
+      $('tabColorsBtn').onclick = () => { state.activeTab = 'colors'; update(); };
+      $('modeKeycapsBtn').onclick = () => { state.colorMode = 'keycaps'; update(); };
+      $('modeTextBtn').onclick = () => { state.colorMode = 'text'; update(); };
+      $('activeColorSlotSelect').onchange = e => { state.activeColorSlot = Number(e.target.value); update(); };
+      $('applyAllColorBtn').onclick = () => {
+        if(state.colorMode === 'keycaps'){
+          const c = state.keyColors[state.activeColorSlot] || palette[0];
+          state.keyColors = Array(9).fill(c);
+          toast('Warna keycaps diterapkan');
+        } else {
+          const c = state.legendColors[state.activeColorSlot] || palette[0];
+          state.legendColors = Array(9).fill(c);
+          toast('Warna tulisan diterapkan');
+        }
+        update();
+      };
       $('saveImageBtn').onclick = saveImage;
-      $('waBtn').onclick = sendWa;
-      if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
       update();
     }
     init();
