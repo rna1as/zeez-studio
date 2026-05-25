@@ -1,0 +1,17 @@
+{
+  "name": "ZEEZ Studio Keycap Customizer",
+  "short_name": "ZEEZ Studio",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff7fb",
+  "theme_color": "#ff7aa7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
