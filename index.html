@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#ff7aa7" />
-  <meta name="description" content="ZEEZ Studio custom keycap keychain simulator" />
-  <title>ZEEZ Studio — Keycap Customizer</title>
+  <meta name="theme-color" content="#ff0a8a" />
+  <meta name="description" content="ZEEZ Studio custom clickies simulator" />
+  <title>ZEEZ Studio — Clickies Customizer</title>
   <style>
     :root{
       --bg:#fff7fb;
@@ -51,6 +51,32 @@
     }
     .brand h1{font-size:20px;line-height:1;margin:0;font-weight:1000;letter-spacing:-.4px}
     .brand p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+    .ghostBtn{
+      border:2px solid #111;border-radius:16px;background:#fff;padding:10px 14px;
+      box-shadow:3px 4px 0 #000;font-weight:1000;cursor:pointer;
+    }
+    .ghostBtn:active{transform:translate(2px,2px);box-shadow:1px 2px 0 #000}
+    .homePanel{
+      border:1px solid rgba(255,255,255,.75);
+      background:rgba(255,255,255,.82);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+    .heroTitle{margin:4px 0 6px;font-size:26px;line-height:1.1;font-weight:1000;letter-spacing:-.8px;text-align:center}
+    .heroText{margin:0 auto 18px;max-width:620px;text-align:center;color:var(--muted);font-size:13px;font-weight:800;line-height:1.5}
+    .modelGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+    .modelCard{
+      border:2.5px solid #111;border-radius:24px;background:#fff;padding:14px 12px;
+      box-shadow:5px 7px 0 #000;cursor:pointer;min-height:210px;
+      display:grid;gap:10px;align-content:space-between;text-align:center;
+      transition:.15s transform,.15s box-shadow;
+    }
+    .modelCard:active{transform:translate(2px,2px);box-shadow:2px 3px 0 #000}
+    .modelCard.active{box-shadow:inset 0 0 0 4px var(--brand),5px 7px 0 #000}
+    .modelThumb{width:100%;height:112px;display:grid;place-items:center;overflow:hidden;border-radius:22px;background:#f6f0f2}.modelThumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:22px}
+    .modelName{font-size:16px;font-weight:1000}
+    .modelDesc{font-size:11px;color:var(--muted);font-weight:800;line-height:1.35}
     .grid{display:grid;grid-template-columns:minmax(0, 1fr) 420px;gap:18px;align-items:start}
     .panel,.previewPanel{
       border:1px solid rgba(255,255,255,.75);
@@ -61,6 +87,13 @@
     }
     .panel{padding:18px}
     .previewPanel{position:sticky;top:82px;padding:16px}
+    .selectedModelLine{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:14px;padding:10px 12px;border:1px solid var(--line);border-radius:18px;background:#fff;
+    }
+    .selectedModelLine b{font-size:13px}
+    .selectedModelLine span{color:var(--brand);font-weight:1000}
+    .miniBtn{border:0;background:#fff;border-radius:12px;padding:8px 10px;box-shadow:inset 0 0 0 1px var(--line);font-size:12px;font-weight:1000;cursor:pointer}
     .tabBar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
     .mainTab{
       min-height:52px;border:2.5px solid var(--tabBorder);border-radius:18px;background:#fff;
@@ -82,15 +115,15 @@
     input:focus,select:focus{border-color:rgba(255,122,167,.70);box-shadow:0 0 0 4px rgba(255,122,167,.12)}
     .palette{display:flex;flex-wrap:wrap;gap:10px}
     .swatch{
-      --frame-color:#ddd;
+      --frame-color:#ddd;--label-color:#111;
       border:2px solid #111;background:var(--frame-color);border-radius:16px;padding:0 14px;cursor:pointer;text-align:center;
       box-shadow:3px 4px 0 #000;min-height:58px;min-width:116px;display:inline-flex;gap:8px;justify-content:center;align-items:center;
       transition:.15s transform,.15s box-shadow,.15s background,.15s filter;
+      color:var(--label-color);
     }
     .swatch:active{transform:translate(2px,2px);box-shadow:1px 2px 0 #000}
-    .swatch.active{background:var(--frame-color);box-shadow:inset 0 0 0 4px var(--brand), 3px 4px 0 #000}
-    .dot{display:none}
-    .swatch span:last-child{font-size:12px;font-weight:1000;color:inherit;line-height:1.2;text-align:center;white-space:nowrap}
+    .swatch.active{box-shadow:inset 0 0 0 4px var(--brand), 3px 4px 0 #000}
+    .swatch span{font-size:12px;font-weight:1000;line-height:1.2;text-align:center;white-space:nowrap;color:var(--label-color)}
     .subTabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
     .subTab{
       min-height:44px;border:2px solid #111;border-radius:16px;background:#fff;color:#6c7482;font-weight:1000;cursor:pointer;
@@ -128,7 +161,8 @@
     .btn.blue{background:linear-gradient(135deg,var(--brand2),var(--brand3));color:#fff;box-shadow:0 14px 26px rgba(142,218,245,.25)}
     .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);opacity:0;background:#221d26;color:#fff;padding:12px 14px;border-radius:999px;z-index:99;font-weight:900;font-size:13px;box-shadow:0 18px 34px rgba(0,0,0,.18);transition:.25s}
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-    @media (max-width: 900px){
+    @media (max-width: 980px){
+      .modelGrid{grid-template-columns:repeat(3,1fr)}
       .grid{grid-template-columns:1fr}
       .previewPanel{position:relative;top:auto}
       .previewWrap{min-height:430px}
@@ -136,14 +170,19 @@
       .topbar{padding-top:8px}
       .brand h1{font-size:18px}
     }
-    @media (max-width: 520px){
+    @media (max-width: 620px){
+      .modelGrid{grid-template-columns:1fr 1fr}
+      .modelCard{min-height:190px}
       .app{padding-left:10px;padding-right:10px}
-      .panel,.previewPanel{border-radius:22px;padding:12px}
+      .panel,.previewPanel,.homePanel{border-radius:22px;padding:12px}
       .tabBar{gap:8px}
       .mainTab{min-height:48px;font-size:14px}
       .subTabs{gap:8px}
       .swatch{min-height:54px;min-width:100px;padding:0 12px}
       .previewWrap{min-height:380px;padding:0}
+    }
+    @media (max-width: 390px){
+      .modelGrid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -154,13 +193,25 @@
         <div class="logo">ZS</div>
         <div>
           <h1>ZEEZ Studio</h1>
-          <p>Custom keycap keychain simulator</p>
+          <p>Custom clickies simulator</p>
         </div>
       </div>
+      <button class="ghostBtn hidden" id="homeBtn" type="button">Pilih model</button>
     </header>
 
-    <main class="grid">
+    <section class="homePanel" id="homeScreen">
+      <h2 class="heroTitle">Pilih Model Clickies</h2>
+      <p class="heroText">Pilih bentuk produk dulu, lalu lanjut custom teks, warna case, warna keycap, dan warna tulisan.</p>
+      <div class="modelGrid" id="modelGrid"></div>
+    </section>
+
+    <main class="grid hidden" id="customizerScreen">
       <section class="panel" aria-label="Customizer controls">
+        <div class="selectedModelLine">
+          <b>Model: <span id="selectedModelName">Classic</span></b>
+          <button class="miniBtn" id="changeModelBtn" type="button">Ganti model</button>
+        </div>
+
         <div class="tabBar">
           <button class="mainTab active" id="tabTextBtn" type="button">TEXT</button>
           <button class="mainTab" id="tabCaseBtn" type="button">CASE</button>
@@ -188,14 +239,15 @@
             <div class="editorTop">
               <div>
                 <div class="editorLabel" id="editorTitle">Warna keycap</div>
-                <div class="helper" id="editorSubtitle">Pilih slot lalu tentukan warnanya.</div>
+                <div class="helper" id="editorSubtitle">Pilih satu warna untuk semua slot sekaligus.</div>
               </div>
-              <div class="slotHint" id="slotHint">Z</div>
+              <div class="slotHint" id="slotHint" style="display:none">Z</div>
             </div>
-            <div class="row">
+            <div class="row" style="display:none">
               <select id="activeColorSlotSelect" aria-label="Pilih slot warna"></select>
               <button class="smallBtn" id="applyAllColorBtn" type="button">Terapkan ke semua</button>
             </div>
+            <div class="helper" style="margin:10px 2px 14px">Warna yang dipilih akan langsung diterapkan ke semua slot.</div>
             <div class="palette" id="colorPalette"></div>
           </div>
         </div>
@@ -203,7 +255,7 @@
 
       <aside class="previewPanel" aria-label="Live preview">
         <div class="previewWrap">
-          <svg id="previewSvg" width="360" height="590" viewBox="0 0 360 590" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview custom keycap"></svg>
+          <svg id="previewSvg" width="360" height="590" viewBox="0 0 360 590" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Preview custom clickies"></svg>
         </div>
         <div class="actions">
           <button class="btn blue" id="saveImageBtn" type="button">💾 Simpan gambar</button>
@@ -233,10 +285,17 @@
       {name:'Silver', hex:'#C8CDD3'}
     ];
 
+    const models = [
+      {id:'classic', name:'Classic', desc:'Kotak keycap vertikal'},
+      {id:'heart', name:'Heart', desc:'Bentuk hati lucu'},
+      {id:'flexible', name:'Flexible', desc:'Frame putih, keycap pink, karakter putih'}
+    ];
+
     const state = {
       text: 'ZEEZ',
+      model: 'classic',
       caseColor: palette[2],
-      keyColors: [palette[1], palette[9], palette[3], palette[5], palette[14], palette[15], palette[7], palette[10], palette[13]],
+      keyColors: Array(9).fill(palette[9]),
       legendColors: Array(9).fill(palette[0]),
       activeTab: 'text',
       colorMode: 'keycaps',
@@ -279,9 +338,8 @@
       return (r*299+g*587+b*114)/1000;
     }
 
-
     function readableText(hex){
-      return brightness(hex) > 155 ? '#111111' : '#ffffff';
+      return brightness(hex) < 145 ? '#ffffff' : '#161319';
     }
 
     function shade(hex, pct){
@@ -305,6 +363,7 @@
     function currentConfig(){
       const slots = activeSlots();
       return {
+        model: state.model,
         text: charsForSlots().join(''),
         slots,
         case: state.caseColor.name,
@@ -318,6 +377,119 @@
       return `ZEEZ-${cfg.slots}${hashCode(JSON.stringify(cfg))}`;
     }
 
+    function modelName(){
+      return (models.find(m => m.id === state.model) || models[0]).name;
+    }
+
+    function setModelDefaults(modelId){
+      if(modelId === 'heart'){
+        state.caseColor = palette.find(p => p.name === 'Red') || palette[7];
+        state.keyColors = Array(9).fill(palette.find(p => p.name === 'Sakura Pink') || palette[9]);
+        state.legendColors = Array(9).fill(palette.find(p => p.name === 'Red') || palette[7]);
+      } else if(modelId === 'flexible'){
+        state.caseColor = palette.find(p => p.name === 'White') || palette[1];
+        state.keyColors = Array(9).fill(palette.find(p => p.name === 'Sakura Pink') || palette[9]);
+        state.legendColors = Array(9).fill(palette.find(p => p.name === 'White') || palette[1]);
+      }
+    }
+
+    function showHome(){
+      $('homeScreen').classList.remove('hidden');
+      $('customizerScreen').classList.add('hidden');
+      $('homeBtn').classList.add('hidden');
+      renderModelCards();
+    }
+
+    function showCustomizer(modelId){
+      const nextModel = modelId || state.model;
+      if(nextModel !== state.model){
+        setModelDefaults(nextModel);
+      }
+      state.model = nextModel;
+      $('homeScreen').classList.add('hidden');
+      $('customizerScreen').classList.remove('hidden');
+      $('homeBtn').classList.remove('hidden');
+      update();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+
+    function shapeMarkup(modelId, cx, cy, outerS, innerS, caseFill, keyFill, textFill, ch, fontSize=24, thumb=false){
+      const darkCase = shade(caseFill, -18);
+      const lightKey = shade(keyFill, 25);
+      const stroke = thumb ? '#111' : 'rgba(0,0,0,.18)';
+      let out = '';
+      if(modelId === 'heart'){
+        out += `<path d="${heartPath(cx+3,cy+4,outerS)}" fill="#000" opacity=".13"/>`;
+        out += `<path d="${heartPath(cx,cy,outerS)}" fill="${darkCase}"/>`;
+        out += `<path d="${heartPath(cx,cy,outerS*0.92)}" fill="${caseFill}" stroke="${stroke}" stroke-width="2"/>`;
+        out += `<path d="${heartPath(cx,cy,innerS)}" fill="${keyFill}" stroke="${stroke}" stroke-width="1"/>`;
+        out += `<path d="${heartPath(cx,cy-1,innerS*0.72)}" fill="${lightKey}" opacity=".50"/>`;
+      } else if(modelId === 'flexible'){
+        out += flexibleTileMarkup(cx, cy, outerS*1.35, outerS*1.38, caseFill, keyFill, textFill, ch, fontSize, thumb);
+      } else if(modelId === 'star'){
+        out += `<polygon points="${starPoints(cx+3,cy+4,outerS,outerS*0.48)}" fill="#000" opacity=".13"/>`;
+        out += `<polygon points="${starPoints(cx,cy,outerS,outerS*0.48)}" fill="${darkCase}"/>`;
+        out += `<polygon points="${starPoints(cx,cy,outerS*0.92,outerS*0.44)}" fill="${caseFill}" stroke="${stroke}" stroke-width="2"/>`;
+        out += `<polygon points="${starPoints(cx,cy,innerS,innerS*0.48)}" fill="${keyFill}" stroke="${stroke}" stroke-width="1"/>`;
+      } else if(modelId === 'flower'){
+        out += `<g transform="translate(3 4)" opacity=".13">${flowerPetals(cx,cy,outerS,'#000','none')}</g>`;
+        out += flowerPetals(cx,cy,outerS,darkCase,'none');
+        out += flowerPetals(cx,cy,outerS*0.92,caseFill,stroke);
+        out += flowerPetals(cx,cy,innerS,keyFill,stroke);
+        out += `<circle cx="${cx}" cy="${cy-innerS*0.12}" r="${innerS*0.28}" fill="${lightKey}" opacity=".55"/>`;
+      }
+      if(modelId !== 'flexible') out += `<text x="${cx}" y="${cy+fontSize*0.34}" text-anchor="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>`;
+      return out;
+    }
+
+    const modelPhotoThumbs = {
+      classic: 'assets/classic.png',
+      heart: 'assets/heart.png',
+      flexible: 'assets/flexible.png'
+    };
+
+    function modelThumbSvg(modelId){
+      const chars = ['Z','S','!'];
+      const key = ['#F9DDE7','#F7E6A8','#F9DDE7'];
+      const caseColor = '#F2D64B';
+      let out = `<svg width="150" height="112" viewBox="0 0 150 112" xmlns="http://www.w3.org/2000/svg">`;
+      out += `<rect width="150" height="112" rx="24" fill="#fff7fb"/>`;
+      if(modelId === 'classic'){
+        out += `<rect x="55" y="16" width="40" height="82" rx="14" fill="${caseColor}" stroke="#111" stroke-width="2"/>`;
+        chars.forEach((ch,i)=>{ const y=25+i*24; out += `<rect x="63" y="${y}" width="24" height="20" rx="7" fill="${['#F7F7F4','#F6B7C8','#8FD3FF'][i]}" stroke="#111"/><text x="75" y="${y+15}" text-anchor="middle" font-size="13" font-weight="900">${ch}</text>`; });
+      } else if(modelId === 'heart'){
+        const xs = [36, 57, 78, 99];
+        xs.forEach((x,i)=>{ out += heartTokenMarkup(x, 61 + (i%2===1?-2:0), 13, 9.7, caseColor, key[i%3], '#F0669C', chars[i%3], 10); });
+      } else if(modelId === 'flexible'){
+        out += `<rect width="150" height="112" rx="24" fill="#EBEBEB"/>`;
+        for(let i=0;i<15;i++){ const y = 8 + i*7; out += `<path d="M0 ${y} C 40 ${y-1.2}, 95 ${y+1.0}, 150 ${y}" fill="none" stroke="#D9D9D9" stroke-width="0.75" opacity="${i%2?'.58':'.34'}"/>`; }
+        out += metalRingMarkup(46, 17, 8.5);
+        out += chainLinkMarkup(54, 28, 2.9, 4.0, -18);
+        out += chainLinkMarkup(59, 37, 2.7, 3.8, 14);
+        const tx = 76;
+        [28, 56, 84].forEach((y,i)=>{ out += flexibleTileMarkup(tx, y, 23, 23, '#FFFFFF', '#F6C4D2', '#FFFFFF', ['O','♥','U'][i], 9.5, true, 0); if(i<2){ out += flexibleConnectorMarkup(tx, y+15, 4.9); } });
+      } else {
+        chars.forEach((ch,i)=>{ const y=30+i*25; out += shapeMarkup(modelId,75,y,28,20,caseColor,['#F7F7F4','#F6B7C8','#8FD3FF'][i],'#111',ch,13,true); });
+      }
+      out += `</svg>`;
+      return out;
+    }
+
+    function renderModelCards(){
+      const wrap = $('modelGrid');
+      wrap.innerHTML = '';
+      models.forEach(model => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'modelCard';
+        if(state.model === model.id) card.classList.add('active');
+        card.innerHTML = `<div class="modelThumb"><img src="${modelPhotoThumbs[model.id] || ''}" alt="${model.name}" /></div><div><div class="modelName">${model.name}</div><div class="modelDesc">${model.desc}</div></div>`;
+        card.onclick = () => showCustomizer(model.id);
+        wrap.appendChild(card);
+      });
+    }
+
     function buildPalette(containerId, colors, getActive, onClick){
       const wrap = $(containerId);
       wrap.innerHTML='';
@@ -327,8 +499,8 @@
         b.type='button';
         b.title=c.name;
         b.style.setProperty('--frame-color', c.hex);
-        b.style.color = readableText(c.hex);
-        b.innerHTML=`<span class="dot"></span><span>${c.name}</span>`;
+        b.style.setProperty('--label-color', readableText(c.hex));
+        b.innerHTML=`<span>${c.name}</span>`;
         if(getActive(c,idx)) b.classList.add('active');
         b.onclick=()=>onClick(c,idx);
         wrap.appendChild(b);
@@ -360,30 +532,26 @@
       $('modeKeycapsBtn').classList.toggle('active', state.colorMode === 'keycaps');
       $('modeTextBtn').classList.toggle('active', state.colorMode === 'text');
       $('editorTitle').textContent = state.colorMode === 'keycaps' ? 'Warna keycap' : 'Warna huruf';
-      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih slot lalu tentukan warna keycap.' : 'Pilih slot lalu tentukan warna huruf.';
+      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih satu warna keycap untuk semua slot.' : 'Pilih satu warna huruf untuk semua slot.';
+      $('selectedModelName').textContent = modelName();
     }
 
     function renderColorEditor(){
       updateColorSlotSelect();
       if(state.colorMode === 'keycaps'){
-        buildPalette('colorPalette', palette, c => (state.keyColors[state.activeColorSlot] || {}).name === c.name, c => {
-          state.keyColors[state.activeColorSlot] = c;
+        buildPalette('colorPalette', palette, c => (state.keyColors[0] || {}).name === c.name, c => {
+          state.keyColors = Array(9).fill(c);
           update();
         });
       } else {
-        buildPalette('colorPalette', palette, c => (state.legendColors[state.activeColorSlot] || {}).name === c.name, c => {
-          state.legendColors[state.activeColorSlot] = c;
+        buildPalette('colorPalette', palette, c => (state.legendColors[0] || {}).name === c.name, c => {
+          state.legendColors = Array(9).fill(c);
           update();
         });
       }
     }
 
-    function renderSvg(){
-      const slots = activeSlots();
-      const chars = charsForSlots();
-      const h = Math.max(360, slots*72 + 210);
-      svg.setAttribute('height', h);
-      svg.setAttribute('viewBox', `0 0 360 ${h}`);
+    function renderClassic(slots, chars, h){
       const shellX = 111;
       const shellY = 116;
       const shellW = 138;
@@ -394,29 +562,18 @@
       const bodyH = slots*keyH + (slots-1)*gap + innerPadTop*2;
       const bodyY = shellY;
       const keyX = shellX + (shellW-keyW)/2;
-      const ringCx = 180;
-      const ringCy = 48;
       const caseFill = state.caseColor.hex;
       const darker = shade(caseFill, -18);
       const lighter = shade(caseFill, 25);
-      let defs = `<defs>
-        <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f8f8f8"/><stop offset=".48" stop-color="#9b9b9b"/><stop offset="1" stop-color="#f2f2f2"/></linearGradient>
+      let out = `<defs>
         <linearGradient id="caseGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${lighter}"/><stop offset=".55" stop-color="${caseFill}"/><stop offset="1" stop-color="${darker}"/></linearGradient>
         <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#24172b" flood-opacity=".22"/></filter>
-      </defs>`;
-      let out = `${defs}
-        <rect width="360" height="${h}" rx="28" fill="#fff7fb"/>
-        <circle cx="58" cy="90" r="34" fill="#FFE2EC" opacity=".75"/>
-        <circle cx="296" cy="${h-92}" r="48" fill="#E7F8FF" opacity=".82"/>
-        <circle cx="${ringCx}" cy="${ringCy}" r="28" fill="none" stroke="url(#metal)" stroke-width="9"/>
-        <circle cx="${ringCx}" cy="${ringCy}" r="17" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="3"/>
-        <path d="M180 78 C180 91 180 99 180 111" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/>
-        <circle cx="180" cy="94" r="7" fill="url(#metal)"/>
-        <g filter="url(#softShadow)">
-          <rect x="${shellX}" y="${bodyY}" width="${shellW}" height="${bodyH}" rx="24" fill="url(#caseGrad)"/>
-          <rect x="${shellX+9}" y="${bodyY+10}" width="${shellW-18}" height="${bodyH-20}" rx="18" fill="#101017" opacity=".16"/>
-          <rect x="${shellX+13}" y="${bodyY+14}" width="${shellW-26}" height="${bodyH-28}" rx="16" fill="#ffffff" opacity=".14"/>
-        </g>`;
+      </defs>
+      <g filter="url(#softShadow)">
+        <rect x="${shellX}" y="${bodyY}" width="${shellW}" height="${bodyH}" rx="24" fill="url(#caseGrad)"/>
+        <rect x="${shellX+9}" y="${bodyY+10}" width="${shellW-18}" height="${bodyH-20}" rx="18" fill="#101017" opacity=".16"/>
+        <rect x="${shellX+13}" y="${bodyY+14}" width="${shellW-26}" height="${bodyH-28}" rx="16" fill="#ffffff" opacity=".14"/>
+      </g>`;
       for(let i=0;i<slots;i++){
         const y = bodyY + innerPadTop + i*(keyH+gap);
         const color = state.keyColors[i] || palette[0];
@@ -435,6 +592,277 @@
             <text x="${keyX+keyW/2}" y="${y+38}" text-anchor="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(chars[i] || '')}</text>
           </g>`;
       }
+      return out;
+    }
+
+    function heartPath(cx, cy, s){
+      return `M ${cx} ${cy+s*0.58}
+        C ${cx-s*1.02} ${cy+s*0.06}, ${cx-s*0.92} ${cy-s*0.76}, ${cx-s*0.18} ${cy-s*0.78}
+        C ${cx-s*0.04} ${cy-s*0.79}, ${cx} ${cy-s*0.70}, ${cx} ${cy-s*0.58}
+        C ${cx} ${cy-s*0.70}, ${cx+s*0.04} ${cy-s*0.79}, ${cx+s*0.18} ${cy-s*0.78}
+        C ${cx+s*0.92} ${cy-s*0.76}, ${cx+s*1.02} ${cy+s*0.06}, ${cx} ${cy+s*0.58} Z`;
+    }
+
+    function cloudPath(cx, cy, s){
+      return `M ${cx-s*0.75} ${cy+s*0.20}
+        C ${cx-s*0.90} ${cy-s*0.10}, ${cx-s*0.58} ${cy-s*0.34}, ${cx-s*0.36} ${cy-s*0.26}
+        C ${cx-s*0.28} ${cy-s*0.62}, ${cx+s*0.18} ${cy-s*0.68}, ${cx+s*0.34} ${cy-s*0.36}
+        C ${cx+s*0.70} ${cy-s*0.40}, ${cx+s*0.92} ${cy-s*0.08}, ${cx+s*0.74} ${cy+s*0.20}
+        Z`;
+    }
+
+    function octagonPath(cx, cy, w, h, cut){
+      return `M ${cx-w/2+cut} ${cy-h/2}
+        L ${cx+w/2-cut} ${cy-h/2}
+        L ${cx+w/2} ${cy-h/2+cut}
+        L ${cx+w/2} ${cy+h/2-cut}
+        L ${cx+w/2-cut} ${cy+h/2}
+        L ${cx-w/2+cut} ${cy+h/2}
+        L ${cx-w/2} ${cy+h/2-cut}
+        L ${cx-w/2} ${cy-h/2+cut} Z`;
+    }
+
+    function flexibleGlyphMarkup(cx, cy, ch, fontSize, textFill, thumb=false){
+      const isHeart = ['♥','❤','♡','💗','💖','💘'].includes(ch);
+      if(isHeart){
+        const s = thumb ? fontSize * 0.66 : fontSize * 0.72;
+        return `<path d="${heartPath(cx, cy+1.1, s)}" fill="${textFill}" stroke="rgba(255,255,255,.55)" stroke-width="${thumb ? 0.4 : 0.55}"/>`;
+      }
+      return `<text x="${cx}" y="${cy+fontSize*0.17}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>`;
+    }
+
+    function flexibleTileMarkup(cx, cy, outerW, outerH, caseFill, keyFill, textFill, ch, fontSize=24, thumb=false, rotate=0){
+      const cut = outerW * 0.16;
+      const sideOffset = thumb ? 1.8 : 3.0;
+      const shadowDx = thumb ? 1.7 : 2.8;
+      const shadowDy = thumb ? 2.2 : 4.0;
+      const frameStroke = '#D2D2D2';
+      const sideFill = '#F3F3F3';
+      const sideStroke = '#D8D8D8';
+      const innerStroke = '#C895A1';
+      const innerLight = '#FFD8E2';
+      const innerW = outerW * 0.76;
+      const innerH = outerH * 0.76;
+      let out = `<g transform="rotate(${rotate} ${cx} ${cy})">`;
+      out += `<path d="${octagonPath(cx+shadowDx, cy+shadowDy, outerW, outerH, cut)}" fill="#000" opacity="${thumb ? '.10' : '.13'}"/>`;
+      out += `<path d="${octagonPath(cx, cy+sideOffset, outerW, outerH, cut)}" fill="${sideFill}" stroke="${sideStroke}" stroke-width="${thumb ? 0.7 : 0.9}"/>`;
+      out += `<path d="${octagonPath(cx, cy, outerW, outerH, cut)}" fill="${caseFill}" stroke="${frameStroke}" stroke-width="${thumb ? 0.9 : 1.05}"/>`;
+      out += `<path d="${octagonPath(cx, cy-0.2, innerW, innerH, cut*0.76)}" fill="${keyFill}" stroke="${innerStroke}" stroke-width="${thumb ? 0.65 : 0.85}"/>`;
+      out += `<path d="${octagonPath(cx, cy-2.4, innerW*0.93, innerH*0.64, cut*0.54)}" fill="${innerLight}" opacity=".23"/>`;
+      out += flexibleGlyphMarkup(cx, cy+0.15, ch, fontSize, textFill, thumb);
+      out += `</g>`;
+      return out;
+    }
+
+    function flexibleConnectorMarkup(cx, cy, size=12){
+      const w = size;
+      const h = size*1.45;
+      return `
+        <g>
+          <path d="M ${cx} ${cy-h/2} L ${cx+w*0.30} ${cy-h*0.10} L ${cx+w*0.16} ${cy+h/2} L ${cx-w*0.16} ${cy+h/2} L ${cx-w*0.30} ${cy-h*0.10} Z" fill="#FFFFFF" stroke="#D4D4D4" stroke-width="0.8"/>
+        </g>`;
+    }
+
+    function starPoints(cx, cy, rOuter, rInner, points=5){
+      const arr = [];
+      const step = Math.PI / points;
+      for(let i=0;i<points*2;i++){
+        const r = i % 2 === 0 ? rOuter : rInner;
+        const a = -Math.PI/2 + i*step;
+        arr.push(`${cx + Math.cos(a)*r},${cy + Math.sin(a)*r}`);
+      }
+      return arr.join(' ');
+    }
+
+    function flowerPetals(cx, cy, s, fill, stroke){
+      const petalR = s*0.31;
+      const centerR = s*0.36;
+      let out = '';
+      for(let i=0;i<6;i++){
+        const a = -Math.PI/2 + i*(Math.PI*2/6);
+        out += `<circle cx="${cx + Math.cos(a)*s*0.38}" cy="${cy + Math.sin(a)*s*0.38}" r="${petalR}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+      }
+      out += `<circle cx="${cx}" cy="${cy}" r="${centerR}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+      return out;
+    }
+
+    function heartTokenMarkup(cx, cy, outerS, innerS, rimFill, innerFill, textFill, ch, fontSize=24, rotate=0){
+      const rimDark = shade(rimFill, -18);
+      const rimLight = shade(rimFill, 8);
+      const innerLight = shade(innerFill, 14);
+      const letterShadow = shade(textFill, -20);
+      return `
+        <g transform="rotate(${rotate} ${cx} ${cy})">
+          <path d="${heartPath(cx+3.5, cy+7.5, outerS*0.99)}" fill="#000" opacity=".18"/>
+          <path d="${heartPath(cx, cy+4.3, outerS*0.985)}" fill="${rimDark}"/>
+          <path d="${heartPath(cx, cy, outerS)}" fill="${rimFill}"/>
+          <path d="${heartPath(cx, cy-0.8, outerS*0.975)}" fill="${rimLight}" opacity=".18"/>
+          <path d="${heartPath(cx, cy-1.0, innerS)}" fill="${innerFill}" stroke="rgba(255,255,255,.55)" stroke-width="1.0"/>
+          <path d="${heartPath(cx, cy-3.2, innerS*0.83)}" fill="${innerLight}" opacity=".22"/>
+          <path d="M ${cx-innerS*0.72} ${cy-2.5} C ${cx-innerS*0.40} ${cy-innerS*0.62}, ${cx-innerS*0.05} ${cy-innerS*0.86}, ${cx+innerS*0.26} ${cy-innerS*0.46}" fill="none" stroke="rgba(255,255,255,.48)" stroke-width="1.4" stroke-linecap="round"/>
+          <text x="${cx+0.8}" y="${cy+1.2}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="1000" fill="${letterShadow}" opacity=".20" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>
+          <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>
+        </g>`;
+    }
+
+
+    function metalRingMarkup(cx, cy, r=26){
+      return `
+        <g>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="url(#metal)" stroke-width="5.5"/>
+          <circle cx="${cx}" cy="${cy}" r="${r-4.5}" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.6"/>
+        </g>`;
+    }
+
+    function chainLinkMarkup(cx, cy, rx, ry, rotate=0){
+      return `<g transform="rotate(${rotate} ${cx} ${cy})"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="url(#metal)" stroke-width="4"/><ellipse cx="${cx}" cy="${cy}" rx="${Math.max(1, rx-3)}" ry="${Math.max(1, ry-3)}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/></g>`;
+    }
+
+    function connectorDiscMarkup(cx, cy, fill){
+      const dark = shade(fill, -14);
+      return `
+        <g>
+          <circle cx="${cx}" cy="${cy}" r="8" fill="${dark}"/>
+          <circle cx="${cx}" cy="${cy-1.5}" r="7" fill="${fill}"/>
+          <circle cx="${cx}" cy="${cy-1.5}" r="2.6" fill="#d6b1bd" opacity=".9"/>
+        </g>`;
+    }
+
+    function renderHeartReference(slots, chars){
+      const caseFill = state.caseColor.hex;
+      let out = `<filter id="heartShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="9" stdDeviation="7" flood-color="#24172b" flood-opacity=".18"/></filter>`;
+      const keyColorAt = (i) => (state.keyColors[i] || palette[9]).hex;
+      const textColorAt = (i) => (state.legendColors[i] || palette[7]).hex;
+      if(slots <= 1){
+        out += metalRingMarkup(64, 118, 26);
+        out += chainLinkMarkup(95, 122, 8.8, 6.8, -18);
+        out += chainLinkMarkup(115, 126, 8.2, 6.4, 15);
+        out += connectorDiscMarkup(132, 130, '#E878A5');
+        out += `<g filter="url(#heartShadow)">`;
+        out += heartTokenMarkup(214, 170, 57, 41.5, caseFill, keyColorAt(0), textColorAt(0), chars[0] || '', 39, 0);
+        out += `</g>`;
+      } else if(slots === 2){
+        out += metalRingMarkup(60, 198, 25);
+        out += chainLinkMarkup(90, 198, 8.6, 6.6, -18);
+        out += chainLinkMarkup(110, 198, 8.0, 6.2, 14);
+        out += connectorDiscMarkup(127, 198, '#D9495F');
+        out += `<g filter="url(#heartShadow)">`;
+        out += heartTokenMarkup(192, 214, 50, 36.5, caseFill, keyColorAt(0), textColorAt(0), chars[0] || '', 35, 0);
+        out += heartTokenMarkup(257, 214, 50, 36.5, caseFill, keyColorAt(1), textColorAt(1), chars[1] || '', 35, 0);
+        out += `</g>`;
+      } else {
+        const outerS = 30;
+        const innerS = 22.5;
+        const stepX = 43;
+        const rowY = 214;
+        const startX = 180 - ((slots - 1) * stepX) / 2;
+        out += metalRingMarkup(Math.max(40, startX - 82), 188, 24);
+        out += chainLinkMarkup(Math.max(67, startX - 56), 188, 8.2, 6.5, -18);
+        out += chainLinkMarkup(Math.max(88, startX - 35), 188, 7.8, 6.0, 14);
+        out += connectorDiscMarkup(Math.max(106, startX - 17), 188, '#D9495F');
+        out += `<g filter="url(#heartShadow)">`;
+        for(let i=0;i<slots;i++){
+          const cx = startX + i * stepX;
+          out += heartTokenMarkup(cx, rowY, outerS, innerS, caseFill, keyColorAt(i), textColorAt(i), chars[i] || '', 25, 0);
+        }
+        out += `</g>`;
+      }
+      return out;
+    }
+
+    function renderHeartChain(slots, chars, h){
+      return renderHeartReference(slots, chars);
+    }
+
+    function renderFlexibleReference(slots, chars){
+      const caseFill = state.caseColor.hex;
+      let out = `<filter id="flexShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#24172b" flood-opacity=".16"/></filter>`;
+      const cx = 180;
+      const startY = 130;
+      const gap = 84;
+      const maxShow = Math.min(slots, 9);
+      out += metalRingMarkup(138, 60, 26);
+      out += chainLinkMarkup(150, 83, 5.8, 8.4, -18);
+      out += chainLinkMarkup(160, 97, 5.3, 8.0, 16);
+      out += chainLinkMarkup(169, 110, 4.8, 7.4, -10);
+      out += `<g filter="url(#flexShadow)">`;
+      for(let i=0;i<maxShow;i++){
+        const cy = startY + i*gap;
+        const keyFill = (state.keyColors[i] || palette[9]).hex;
+        const textFill = (state.legendColors[i] || palette[1]).hex;
+        out += flexibleTileMarkup(cx, cy, 62, 62, caseFill, keyFill, textFill, chars[i] || '', chars[i] && chars[i].length > 1 ? 21 : 27, false, 0);
+        if(i < maxShow - 1){
+          out += flexibleConnectorMarkup(cx, cy + 46, 14);
+        }
+      }
+      out += `</g>`;
+      return out;
+    }
+
+    function renderShapeStack(slots, chars, h){
+      const caseFill = state.caseColor.hex;
+      const startY = 118;
+      const gap = 72;
+      const cx = 180;
+      let out = `<filter id="shapeShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#24172b" flood-opacity=".22"/></filter><g filter="url(#shapeShadow)">`;
+      for(let i=0;i<slots;i++){
+        const cy = startY + i*gap;
+        const fill = (state.keyColors[i] || palette[0]).hex;
+        const textFill = (state.legendColors[i] || palette[0]).hex;
+        const fontSize = chars[i] && chars[i].length > 1 ? 22 : 28;
+        out += shapeMarkup(state.model, cx, cy, 34, 24, caseFill, fill, textFill, chars[i], fontSize);
+      }
+      out += `</g>`;
+      return out;
+    }
+
+    function renderSvg(){
+      const slots = activeSlots();
+      const chars = charsForSlots();
+      const h = state.model === 'heart'
+        ? (slots <= 1 ? 300 : (slots === 2 ? 320 : 320))
+        : state.model === 'flexible'
+        ? Math.max(420, slots*84 + 120)
+        : Math.max(360, slots*72 + 210);
+      svg.setAttribute('height', h);
+      svg.setAttribute('viewBox', `0 0 360 ${h}`);
+      let out = `<defs>
+        <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fafafa"/><stop offset=".35" stop-color="#d8d8d8"/><stop offset=".60" stop-color="#8e8e8e"/><stop offset="1" stop-color="#f4f4f4"/></linearGradient>
+      </defs>`;
+      if(state.model === 'heart'){
+        out += `<rect width="360" height="${h}" rx="28" fill="#EEDCC8"/>`;
+        for(let i=0;i<18;i++){
+          const y = 18 + i * (h-36)/17;
+          const alpha = i % 2 === 0 ? '.16' : '.09';
+          out += `<path d="M 0 ${y} C 80 ${y-6}, 150 ${y+6}, 230 ${y-2} S 320 ${y+4}, 360 ${y}" fill="none" stroke="#D0BAA0" stroke-opacity="${alpha}" stroke-width="1.2"/>`;
+        }
+      } else if(state.model === 'flexible'){
+        out += `<rect width="360" height="${h}" rx="28" fill="#EAEAEA"/>`;
+        for(let i=0;i<Math.ceil(h/12)+2;i++){
+          const y = 6 + i*12;
+          out += `<path d="M 0 ${y} C 60 ${y-2}, 150 ${y+2}, 250 ${y-1} S 330 ${y+2}, 360 ${y}" fill="none" stroke="#D5D5D5" stroke-width="1" opacity="${i%2?'.55':'.38'}"/>`;
+        }
+        for(let i=0;i<24;i++){
+          const x = 8 + i*15;
+          out += `<path d="M ${x} 0 C ${x-1} ${h*0.28}, ${x+1} ${h*0.68}, ${x} ${h}" fill="none" stroke="#F3F3F3" stroke-width="0.8" opacity=".20"/>`;
+        }
+      } else {
+        out += `<rect width="360" height="${h}" rx="28" fill="#fff7fb"/>`;
+        out += `
+          <circle cx="58" cy="90" r="34" fill="#FFE2EC" opacity=".75"/>
+          <circle cx="296" cy="${h-92}" r="48" fill="#E7F8FF" opacity=".82"/>`;
+      }
+      if(state.model !== 'heart' && state.model !== 'flexible'){
+        out += `
+          <circle cx="180" cy="48" r="28" fill="none" stroke="url(#metal)" stroke-width="9"/>
+          <circle cx="180" cy="48" r="17" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="3"/>
+          <path d="M180 78 C180 91 180 99 180 111" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="180" cy="94" r="7" fill="url(#metal)"/>`;
+      }
+      if(state.model === 'classic') out += renderClassic(slots, chars, h);
+      else if(state.model === 'heart') out += renderHeartChain(slots, chars, h);
+      else if(state.model === 'flexible') out += renderFlexibleReference(slots, chars);
+      else out += renderShapeStack(slots, chars, h);
       svg.innerHTML = out;
     }
 
@@ -481,7 +909,7 @@
         const url = URL.createObjectURL(png);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${orderCode()}-zeez-studio.png`;
+        a.download = `${orderCode()}-${state.model}-zeez-studio.png`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -494,6 +922,9 @@
     }
 
     function init(){
+      renderModelCards();
+      $('homeBtn').onclick = showHome;
+      $('changeModelBtn').onclick = showHome;
       $('textInput').addEventListener('input', update);
       $('tabTextBtn').onclick = () => { state.activeTab = 'text'; update(); };
       $('tabCaseBtn').onclick = () => { state.activeTab = 'case'; update(); };
@@ -505,16 +936,15 @@
         if(state.colorMode === 'keycaps'){
           const c = state.keyColors[state.activeColorSlot] || palette[0];
           state.keyColors = Array(9).fill(c);
-          toast('Warna keycaps diterapkan');
+          toast('Warna keycaps diterapkan ke semua slot');
         } else {
           const c = state.legendColors[state.activeColorSlot] || palette[0];
           state.legendColors = Array(9).fill(c);
-          toast('Warna tulisan diterapkan');
+          toast('Warna tulisan diterapkan ke semua slot');
         }
         update();
       };
       $('saveImageBtn').onclick = saveImage;
-      update();
     }
     init();
   </script>
