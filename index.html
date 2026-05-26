@@ -201,7 +201,7 @@
 
     <section class="homePanel" id="homeScreen">
       <h2 class="heroTitle">Pilih Model Clickies</h2>
-      <p class="heroText">Pilih bentuk produk dulu, lalu lanjut custom teks, warna case, warna keycap, dan warna tulisan.</p>
+      <p class="heroText">Pilih model dulu, lalu custom teks, warna case, warna keycap, dan warna tulisan.</p>
       <div class="modelGrid" id="modelGrid"></div>
     </section>
 
@@ -239,15 +239,14 @@
             <div class="editorTop">
               <div>
                 <div class="editorLabel" id="editorTitle">Warna keycap</div>
-                <div class="helper" id="editorSubtitle">Pilih satu warna untuk semua slot sekaligus.</div>
+                <div class="helper" id="editorSubtitle">Pilih slot lalu tentukan warnanya.</div>
               </div>
-              <div class="slotHint" id="slotHint" style="display:none">Z</div>
+              <div class="slotHint" id="slotHint">Z</div>
             </div>
-            <div class="row" style="display:none">
+            <div class="row">
               <select id="activeColorSlotSelect" aria-label="Pilih slot warna"></select>
               <button class="smallBtn" id="applyAllColorBtn" type="button">Terapkan ke semua</button>
             </div>
-            <div class="helper" style="margin:10px 2px 14px">Warna yang dipilih akan langsung diterapkan ke semua slot.</div>
             <div class="palette" id="colorPalette"></div>
           </div>
         </div>
@@ -295,7 +294,7 @@
       text: 'ZEEZ',
       model: 'classic',
       caseColor: palette[2],
-      keyColors: Array(9).fill(palette[9]),
+      keyColors: [palette[1], palette[9], palette[3], palette[5], palette[14], palette[15], palette[7], palette[10], palette[13]],
       legendColors: Array(9).fill(palette[0]),
       activeTab: 'text',
       colorMode: 'keycaps',
@@ -532,20 +531,20 @@
       $('modeKeycapsBtn').classList.toggle('active', state.colorMode === 'keycaps');
       $('modeTextBtn').classList.toggle('active', state.colorMode === 'text');
       $('editorTitle').textContent = state.colorMode === 'keycaps' ? 'Warna keycap' : 'Warna huruf';
-      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih satu warna keycap untuk semua slot.' : 'Pilih satu warna huruf untuk semua slot.';
+      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih slot lalu tentukan warna keycap.' : 'Pilih slot lalu tentukan warna huruf.';
       $('selectedModelName').textContent = modelName();
     }
 
     function renderColorEditor(){
       updateColorSlotSelect();
       if(state.colorMode === 'keycaps'){
-        buildPalette('colorPalette', palette, c => (state.keyColors[0] || {}).name === c.name, c => {
-          state.keyColors = Array(9).fill(c);
+        buildPalette('colorPalette', palette, c => (state.keyColors[state.activeColorSlot] || {}).name === c.name, c => {
+          state.keyColors[state.activeColorSlot] = c;
           update();
         });
       } else {
-        buildPalette('colorPalette', palette, c => (state.legendColors[0] || {}).name === c.name, c => {
-          state.legendColors = Array(9).fill(c);
+        buildPalette('colorPalette', palette, c => (state.legendColors[state.activeColorSlot] || {}).name === c.name, c => {
+          state.legendColors[state.activeColorSlot] = c;
           update();
         });
       }
@@ -936,11 +935,11 @@
         if(state.colorMode === 'keycaps'){
           const c = state.keyColors[state.activeColorSlot] || palette[0];
           state.keyColors = Array(9).fill(c);
-          toast('Warna keycaps diterapkan ke semua slot');
+          toast('Warna keycaps diterapkan');
         } else {
           const c = state.legendColors[state.activeColorSlot] || palette[0];
           state.legendColors = Array(9).fill(c);
-          toast('Warna tulisan diterapkan ke semua slot');
+          toast('Warna tulisan diterapkan');
         }
         update();
       };
