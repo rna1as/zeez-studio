@@ -276,7 +276,7 @@
       {name:'Red', hex:'#C92B2B'},
       {name:'Orange', hex:'#F28B2E'},
       {name:'Sakura Pink', hex:'#F6B7C8'},
-      {name:'Fuschia', hex:'#D93D8E'},
+      {name:'Violet', hex:'#D93D8E'},
       {name:'Grey', hex:'#A6A6A6'},
       {name:'Dark Grey', hex:'#595959'},
       {name:'Yellow', hex:'#F2D64B'},
@@ -285,9 +285,10 @@
     ];
 
     const models = [
-      {id:'classic', name:'Classic', desc:'Kotak keycap vertikal'},
-      {id:'heart', name:'Heart', desc:'Bentuk hati lucu'},
-      {id:'flexible', name:'Flexible', desc:'Frame putih, keycap pink, karakter putih'}
+      {id:'classic', name:'Klasik', desc:'Kotak keycap vertikal'},
+      {id:'heart', name:'Hati', desc:'Bentuk hati lucu'},
+      {id:'flexible', name:'Fleksibel', desc:'Frame putih, keycap pink, karakter putih'},
+      {id:'flexible_thick', name:'Fleksibel Tebal', desc:'Keycap tebal model coklat'}
     ];
 
     const state = {
@@ -389,6 +390,10 @@
         state.caseColor = palette.find(p => p.name === 'White') || palette[1];
         state.keyColors = Array(9).fill(palette.find(p => p.name === 'Sakura Pink') || palette[9]);
         state.legendColors = Array(9).fill(palette.find(p => p.name === 'White') || palette[1]);
+      } else if(modelId === 'flexible_thick'){
+        state.caseColor = palette.find(p => p.name === 'Coklat') || palette[14];
+        state.keyColors = Array(9).fill(palette.find(p => p.name === 'Cream') || palette[2]);
+        state.legendColors = Array(9).fill(palette.find(p => p.name === 'Coklat') || palette[14]);
       }
     }
 
@@ -445,7 +450,8 @@
     const modelPhotoThumbs = {
       classic: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/classic.jpg',
       flexible: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/flexible_thin.jpg',
-      heart: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/heart.jpg'
+      heart: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/heart.jpg',
+      flexible_thick: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/flexible_thick.gif'
     };
 
     function modelThumbSvg(modelId){
@@ -798,6 +804,77 @@
       return out;
     }
 
+
+    function renderWoodBackground(h){
+      let out = `<rect width="360" height="${h}" rx="28" fill="#EED9BF"/>`;
+      for(let i=0;i<22;i++){
+        const y = 12 + i * (h - 24) / 21;
+        const a = i % 2 ? '.16' : '.10';
+        out += `<path d="M 0 ${y} C 75 ${y-3}, 138 ${y+4}, 228 ${y-1} S 318 ${y+2}, 360 ${y}" fill="none" stroke="#C9A783" stroke-opacity="${a}" stroke-width="1.1"/>`;
+      }
+      for(let i=0;i<10;i++){
+        const y = 22 + i * (h - 44) / 9;
+        out += `<path d="M 0 ${y} C 110 ${y+2}, 190 ${y-3}, 360 ${y+1}" fill="none" stroke="#F6E7D3" stroke-opacity=".20" stroke-width="2.4"/>`;
+      }
+      return out;
+    }
+
+    function thickTileMarkup(cx, cy, w, h, caseFill, keyFill, textFill, ch, fontSize=24){
+      const outerR = Math.max(8, w*0.18);
+      const innerW = w * 0.72;
+      const innerH = h * 0.68;
+      const side = shade(caseFill, -20);
+      const dark = shade(caseFill, -34);
+      const hi = shade(caseFill, 18);
+      const keyDark = shade(keyFill, -16);
+      const keyHi = shade(keyFill, 24);
+      let out = '';
+      out += `<rect x="${cx-w/2+3}" y="${cy-h/2+8}" width="${w}" height="${h}" rx="${outerR}" fill="#000" opacity=".14"/>`;
+      out += `<rect x="${cx-w/2}" y="${cy-h/2+7}" width="${w}" height="${h}" rx="${outerR}" fill="${side}"/>`;
+      out += `<rect x="${cx-w/2}" y="${cy-h/2}" width="${w}" height="${h}" rx="${outerR}" fill="${caseFill}" stroke="${dark}" stroke-width="1.2"/>`;
+      // ridged / tebal side detail
+      const ridgeCount = Math.max(5, Math.floor(w/7));
+      for(let i=0;i<ridgeCount;i++){
+        const x = cx - w/2 + 4 + i*(w-8)/(ridgeCount-1);
+        out += `<rect x="${x-1.3}" y="${cy-h/2+1}" width="2.6" height="5" rx="1.3" fill="${hi}" opacity=".28"/>`;
+        out += `<rect x="${x-1.3}" y="${cy+h/2-6}" width="2.6" height="5" rx="1.3" fill="${dark}" opacity=".22"/>`;
+      }
+      const sideCount = Math.max(4, Math.floor(h/8));
+      for(let i=0;i<sideCount;i++){
+        const y = cy - h/2 + 7 + i*(h-14)/(sideCount-1);
+        out += `<rect x="${cx-w/2+1}" y="${y-1.2}" width="4.5" height="2.4" rx="1.2" fill="${dark}" opacity=".20"/>`;
+        out += `<rect x="${cx+w/2-5.5}" y="${y-1.2}" width="4.5" height="2.4" rx="1.2" fill="${hi}" opacity=".16"/>`;
+      }
+      out += `<rect x="${cx-innerW/2}" y="${cy-innerH/2-2}" width="${innerW}" height="${innerH}" rx="${Math.max(7, innerW*.17)}" fill="${keyDark}" opacity=".80"/>`;
+      out += `<rect x="${cx-innerW/2+2}" y="${cy-innerH/2}" width="${innerW-4}" height="${innerH-4}" rx="${Math.max(6, innerW*.15)}" fill="${keyFill}" stroke="rgba(0,0,0,.20)" stroke-width="1"/>`;
+      out += `<path d="M ${cx-innerW/2+8} ${cy-innerH/2+5} H ${cx+innerW/2-10} Q ${cx+innerW/2-4} ${cy-innerH/2+5} ${cx+innerW/2-7} ${cy-innerH/2+13} L ${cx+innerW/2-12} ${cy-2} Q ${cx+innerW/2-16} ${cy+5} ${cx+innerW/2-25} ${cy+5} H ${cx-innerW/2+22} Q ${cx-innerW/2+12} ${cy+5} ${cx-innerW/2+9} ${cy-3} L ${cx-innerW/2+5} ${cy-innerH/2+13} Q ${cx-innerW/2+2} ${cy-innerH/2+5} ${cx-innerW/2+8} ${cy-innerH/2+5} Z" fill="${keyHi}" opacity=".26"/>`;
+      out += `<text x="${cx+1.6}" y="${cy+fontSize*0.33+2}" text-anchor="middle" font-size="${fontSize}" font-weight="1000" fill="rgba(0,0,0,.20)" font-family="Georgia, Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>`;
+      out += `<text x="${cx}" y="${cy+fontSize*0.33}" text-anchor="middle" font-size="${fontSize}" font-weight="1000" fill="${textFill}" font-family="Georgia, Arial Rounded MT Bold, Arial, sans-serif">${escapeXml(ch || '')}</text>`;
+      return out;
+    }
+
+    function renderFlexibleThickReference(slots, chars){
+      const caseFill = state.caseColor.hex;
+      const count = Math.min(slots, 9);
+      const tileW = count <= 5 ? 42 : count <= 7 ? 36 : 31;
+      const tileH = count <= 5 ? 44 : count <= 7 ? 38 : 34;
+      const gap = count <= 5 ? 2 : 1;
+      const step = tileW + gap;
+      const startX = 18;
+      const cy = 178;
+      let out = `<filter id="thickShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#24172b" flood-opacity=".16"/></filter>`;
+      out += `<g filter="url(#thickShadow)">`;
+      for(let i=0;i<count;i++){
+        const cx = startX + tileW/2 + i*step;
+        const keyFill = (state.keyColors[i] || palette[2]).hex;
+        const textFill = (state.legendColors[i] || palette[14]).hex;
+        const fontSize = count <= 5 ? 25 : count <= 7 ? 21 : 18;
+        out += thickTileMarkup(cx, cy, tileW, tileH, caseFill, keyFill, textFill, chars[i] || '', fontSize);
+      }
+      out += `</g>`;
+      return out;
+    }
+
     function renderShapeStack(slots, chars, h){
       const caseFill = state.caseColor.hex;
       const startY = 118;
@@ -822,6 +899,8 @@
         ? (slots <= 1 ? 300 : (slots === 2 ? 320 : 320))
         : state.model === 'flexible'
         ? Math.max(420, slots*84 + 120)
+        : state.model === 'flexible_thick'
+        ? 330
         : Math.max(360, slots*72 + 210);
       svg.setAttribute('height', h);
       svg.setAttribute('viewBox', `0 0 360 ${h}`);
@@ -845,13 +924,15 @@
           const x = 8 + i*15;
           out += `<path d="M ${x} 0 C ${x-1} ${h*0.28}, ${x+1} ${h*0.68}, ${x} ${h}" fill="none" stroke="#F3F3F3" stroke-width="0.8" opacity=".20"/>`;
         }
+      } else if(state.model === 'flexible_thick'){
+        out += renderWoodBackground(h);
       } else {
         out += `<rect width="360" height="${h}" rx="28" fill="#fff7fb"/>`;
         out += `
           <circle cx="58" cy="90" r="34" fill="#FFE2EC" opacity=".75"/>
           <circle cx="296" cy="${h-92}" r="48" fill="#E7F8FF" opacity=".82"/>`;
       }
-      if(state.model !== 'heart' && state.model !== 'flexible'){
+      if(state.model !== 'heart' && state.model !== 'flexible' && state.model !== 'flexible_thick'){
         out += `
           <circle cx="180" cy="48" r="28" fill="none" stroke="url(#metal)" stroke-width="9"/>
           <circle cx="180" cy="48" r="17" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="3"/>
@@ -861,6 +942,7 @@
       if(state.model === 'classic') out += renderClassic(slots, chars, h);
       else if(state.model === 'heart') out += renderHeartChain(slots, chars, h);
       else if(state.model === 'flexible') out += renderFlexibleReference(slots, chars);
+      else if(state.model === 'flexible_thick') out += renderFlexibleThickReference(slots, chars);
       else out += renderShapeStack(slots, chars, h);
       svg.innerHTML = out;
     }
