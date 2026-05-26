@@ -76,8 +76,7 @@
     .modelCard.active{box-shadow:inset 0 0 0 4px var(--brand),5px 7px 0 #000}
     .modelThumb{width:100%;aspect-ratio:1 / 1;display:grid;place-items:center;overflow:hidden;border-radius:22px;background:#f6f0f2}.modelThumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:22px}
     .modelName{font-size:16px;font-weight:1000}
-    .modelDesc{font-size:11px;color:var(--muted);font-weight:800;line-height:1.35}
-    .grid{display:grid;grid-template-columns:minmax(0, 1fr) 420px;gap:18px;align-items:start}
+        .grid{display:grid;grid-template-columns:minmax(0, 1fr) 420px;gap:18px;align-items:start}
     .panel,.previewPanel{
       border:1px solid rgba(255,255,255,.75);
       background:rgba(255,255,255,.82);
@@ -201,7 +200,7 @@
 
     <section class="homePanel" id="homeScreen">
       <h2 class="heroTitle">Pilih Model Clickies</h2>
-      <p class="heroText">Pilih model dulu, lalu custom teks, warna case, warna keycap, dan warna tulisan.</p>
+      <p class="heroText">Pilih bentuk produk dulu, lalu lanjut custom teks, warna case, warna keycap, dan warna tulisan.</p>
       <div class="modelGrid" id="modelGrid"></div>
     </section>
 
@@ -239,14 +238,15 @@
             <div class="editorTop">
               <div>
                 <div class="editorLabel" id="editorTitle">Warna keycap</div>
-                <div class="helper" id="editorSubtitle">Pilih slot lalu tentukan warnanya.</div>
+                <div class="helper" id="editorSubtitle">Pilih satu warna untuk semua slot sekaligus.</div>
               </div>
-              <div class="slotHint" id="slotHint">Z</div>
+              <div class="slotHint" id="slotHint" style="display:none">Z</div>
             </div>
-            <div class="row">
+            <div class="row" style="display:none">
               <select id="activeColorSlotSelect" aria-label="Pilih slot warna"></select>
               <button class="smallBtn" id="applyAllColorBtn" type="button">Terapkan ke semua</button>
             </div>
+            <div class="helper" style="margin:10px 2px 14px">Warna yang dipilih akan langsung diterapkan ke semua slot.</div>
             <div class="palette" id="colorPalette"></div>
           </div>
         </div>
@@ -294,7 +294,7 @@
       text: 'ZEEZ',
       model: 'classic',
       caseColor: palette[2],
-      keyColors: [palette[1], palette[9], palette[3], palette[5], palette[14], palette[15], palette[7], palette[10], palette[13]],
+      keyColors: Array(9).fill(palette[9]),
       legendColors: Array(9).fill(palette[0]),
       activeTab: 'text',
       colorMode: 'keycaps',
@@ -443,9 +443,9 @@
     }
 
     const modelPhotoThumbs = {
-      classic: 'https://github.com/rna1as/zeez-studio/blob/main/assets/classic.jpg',
-      flexible: 'https://github.com/rna1as/zeez-studio/blob/main/assets/flexible_thin.jpg',
-      heart: 'https://github.com/rna1as/zeez-studio/blob/main/assets/heart.jpg'
+      classic: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/classic.jpg',
+      flexible: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/flexible_thin.jpg',
+      heart: 'https://raw.githubusercontent.com/rna1as/zeez-studio/main/assets/heart.jpg'
     };
 
     function modelThumbSvg(modelId){
@@ -531,20 +531,20 @@
       $('modeKeycapsBtn').classList.toggle('active', state.colorMode === 'keycaps');
       $('modeTextBtn').classList.toggle('active', state.colorMode === 'text');
       $('editorTitle').textContent = state.colorMode === 'keycaps' ? 'Warna keycap' : 'Warna huruf';
-      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih slot lalu tentukan warna keycap.' : 'Pilih slot lalu tentukan warna huruf.';
+      $('editorSubtitle').textContent = state.colorMode === 'keycaps' ? 'Pilih satu warna keycap untuk semua slot.' : 'Pilih satu warna huruf untuk semua slot.';
       $('selectedModelName').textContent = modelName();
     }
 
     function renderColorEditor(){
       updateColorSlotSelect();
       if(state.colorMode === 'keycaps'){
-        buildPalette('colorPalette', palette, c => (state.keyColors[state.activeColorSlot] || {}).name === c.name, c => {
-          state.keyColors[state.activeColorSlot] = c;
+        buildPalette('colorPalette', palette, c => (state.keyColors[0] || {}).name === c.name, c => {
+          state.keyColors = Array(9).fill(c);
           update();
         });
       } else {
-        buildPalette('colorPalette', palette, c => (state.legendColors[state.activeColorSlot] || {}).name === c.name, c => {
-          state.legendColors[state.activeColorSlot] = c;
+        buildPalette('colorPalette', palette, c => (state.legendColors[0] || {}).name === c.name, c => {
+          state.legendColors = Array(9).fill(c);
           update();
         });
       }
@@ -935,11 +935,11 @@
         if(state.colorMode === 'keycaps'){
           const c = state.keyColors[state.activeColorSlot] || palette[0];
           state.keyColors = Array(9).fill(c);
-          toast('Warna keycaps diterapkan');
+          toast('Warna keycaps diterapkan ke semua slot');
         } else {
           const c = state.legendColors[state.activeColorSlot] || palette[0];
           state.legendColors = Array(9).fill(c);
-          toast('Warna tulisan diterapkan');
+          toast('Warna tulisan diterapkan ke semua slot');
         }
         update();
       };
